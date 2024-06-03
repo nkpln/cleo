@@ -239,8 +239,7 @@ class ExceptionTrace:
 
     def render(self, io: IO | Output, simple: bool = False) -> None:
         # If simple rendering wouldn't show anything useful, abandon it.
-        simple_string = str(self._exception) if simple else ""
-        if simple_string:
+        if simple_string := str(self._exception) if simple else "":
             io.write_line("")
             io.write_line(f"<error>{simple_string}</error>")
         else:
@@ -325,15 +324,13 @@ class ExceptionTrace:
                     i -= len(collection) * (collection.repetitions + 1)
 
                 for frame in collection:
-                    relative_file_path = self._get_relative_file_path(frame.filename)
-                    relative_file_path_parts = relative_file_path.split(os.sep)
-                    relative_file_path = (
-                        f"<fg=default;options=dark>{Formatter.escape(os.sep)}</>".join(
-                            relative_file_path_parts[:-1]
-                            + [
-                                "<fg=default;options=bold>"
-                                f"{relative_file_path_parts[-1]}</>"
-                            ]
+                    relative_file_path_parts = self._get_relative_file_path(
+                        frame.filename
+                    ).parts
+                    relative_file_path = f"<fg=default;options=dark>{Formatter.escape(os.sep)}</>".join(
+                        (
+                            *relative_file_path_parts[:-1],
+                            f"<fg=default;options=bold>{relative_file_path_parts[-1]}</>",
                         )
                     )
                     self._render_line(
@@ -388,11 +385,11 @@ class ExceptionTrace:
         io.write_line(f"{indent * ' '}{line}")
 
     @staticmethod
-    def _get_relative_file_path(filepath: str) -> str:
+    def _get_relative_file_path(filepath: str) -> Path:
         if cwd := Path.cwd():
             filepath = filepath.replace(f"{cwd}{os.sep}", "")
 
         if home := Path("~").expanduser():
             filepath = filepath.replace(f"{home}{os.sep}", f"~{os.sep}")
 
-        return filepath
+        return Path(filepath)

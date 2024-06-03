@@ -164,8 +164,7 @@ class TextDescriptor(Descriptor):
         described_namespace = options.get("namespace")
         description = ApplicationDescription(application, namespace=described_namespace)
 
-        help_text = application.help
-        if help_text:
+        if help_text := application.help:
             self._write(f"{help_text}\n\n")
 
         self._write("<b>Usage:</b>\n")
@@ -265,8 +264,7 @@ class TextDescriptor(Descriptor):
             if isinstance(command, Command):
                 assert command.name is not None
                 widths.append(len(command.name))
-                for alias in command.aliases:
-                    widths.append(len(alias))
+                widths.extend(len(alias) for alias in command.aliases)
             else:
                 widths.append(len(command))
 
@@ -276,9 +274,7 @@ class TextDescriptor(Descriptor):
         return max(widths) + 2
 
     def _get_command_aliases_text(self, command: Command) -> str:
-        aliases = command.aliases
-
-        if aliases:
+        if aliases := command.aliases:
             return f"[{ '|'.join(aliases) }] "
 
         return ""
